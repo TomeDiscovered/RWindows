@@ -1,14 +1,14 @@
 {
   "files": {
     "main.css": "/RWindows/static/css/main.b620eeba.css",
-    "main.js": "/RWindows/static/js/main.6e046d5b.js",
+    "main.js": "/RWindows/static/js/main.dd2d2eef.js",
     "static/media/jsoneditor-icons.svg": "/RWindows/static/media/jsoneditor-icons.15f2789dd231f36d43a4.svg",
     "index.html": "/RWindows/index.html",
     "main.b620eeba.css.map": "/RWindows/static/css/main.b620eeba.css.map",
-    "main.6e046d5b.js.map": "/RWindows/static/js/main.6e046d5b.js.map"
+    "main.dd2d2eef.js.map": "/RWindows/static/js/main.dd2d2eef.js.map"
   },
   "entrypoints": [
     "static/css/main.b620eeba.css",
-    "static/js/main.6e046d5b.js"
+    "static/js/main.dd2d2eef.js"
   ]
 }
