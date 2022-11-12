@@ -40,7 +40,7 @@ const RWindowEditor = props => {
     /** Options used to initialize the JSONEditor object. */
     const editorOptions = {
       /** Default mode of the JSONEditor object. */
-      mode: mode,
+      mode: "tree",
 
       onChangeText: (e) => {
         /** Changes the target RWindow's state to match the object
@@ -53,35 +53,33 @@ const RWindowEditor = props => {
       popupAnchor: editorContainer
     };
 
-    /** Instantiating the JSONEditor object. */
-    let _editor = new JSONEditor(editorContainer, editorOptions);
+    /** Makes the JsonEditor object accessible outside of this useEffect function. */
+    setEditor(new JSONEditor(editorContainer, editorOptions));
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if(!editor) return;
 
     /** Set the initial state of the JSONEditor object. */
-    props.targetApi.getState(state => { _editor.set(state); });
+    props.targetApi.getState(state => { editor.set(state); });
 
     props.targetApi.subscribeToState(props.targetId, (state, origin) => {
       /** If the target's state is null, there's nothing to edit. Close. */
       if(!state) return windowApi.close();
 
       /** Else, update the JSONEditor object to sync changes to target's state. */
-      _editor.update(state);
+      editor.update(state);
     });
-
-    /** Makes the JsonEditor object accessible outside of this useEffect function. */
-    setEditor(_editor);
 
     return (() => {
       /** Only -you- can prevent memory leaks! */
       props.targetApi.unsubFromState(props.targetId);
-      if(_editor) _editor.destroy();
+      if(editor) editor.destroy();
     });
-  }, []);
 
-  useEffect(() => {
-    if(!editor) return;
-
-    /** Resyncs the JSONEditor object in case it gets reinstantiated. */
-    props.targetApi.getState(state => { editor.update(state); });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editor]);
 
   return (
@@ -105,6 +103,10 @@ const RWindowEditor = props => {
         display: "flex", gap: 10,
         position: "", bottom: "5px", right: "22px"
       }}>
+        <button style={{minWidth: "60px"}} onClick={toggleMode}>
+          { mode === "tree" ? "View" : "Edit" }
+        </button>
+
         { mode === "tree" ? null :
           <>
             <button style={{minWidth: "60px"}} onClick={toggleViewMode}>
@@ -125,10 +127,6 @@ const RWindowEditor = props => {
             </button>
           </>
         }
-
-        <button style={{minWidth: "60px"}} onClick={toggleMode}>
-          { mode === "tree" ? "View" : "Edit" }
-        </button>
       </div>
     </div>
   );

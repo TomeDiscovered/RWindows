@@ -1,6 +1,6 @@
-import React, { useReducer, useEffect, useContext, createContext, useRef, useCallback, useState } from 'react';
+import React, { useReducer, useEffect, useContext,
+                createContext, useRef, useState, useMemo } from 'react';
 import Draggable from 'react-draggable';
-import { v4 as uuidv4 } from 'uuid';
 import RWindowRealm from "./RWindowRealm.js";
 import Titlebar from "./components/Titlebar.js";
 
@@ -137,7 +137,7 @@ const RWindow = props => {
   /** Functions called when state changes. */
   const [stateSubscribers, setStateSubscribers] = useState([]);
 
-  const api = {
+  const api = useMemo(() => { return {
     /** The unique identifier of this RWindow Jsx and api. */
     id: props.options?.id,
 
@@ -173,11 +173,12 @@ const RWindow = props => {
 
     /** Returns the current state as an argument to the supplied function. */
     getState: (getState) => { dispatch({type: "get_state", payload: getState}) }
-  };
+  } }, [props.options?.id, realmApi, stateSubscribers]);
 
   useEffect(() => {
-    /** This component just mounted, it must be the most-recently focused. */
-    api.setFocused();
+    if(!api || !props) return;
+
+    api.setFocused(props.options?.id);
 
     /** Registers the above api to be used within the realm
      *  to interact with this RWindow. */
@@ -187,26 +188,43 @@ const RWindow = props => {
       /** Only -you- can prevent memory leaks! */
       if(props.removeApi) props.removeApi(props.options?.id);
     };
+
+    /** If api is called within a useEffect, it should be accounted for (above)
+     *  & ignored (below) */
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
+    if(!stateSubscribers) return;
+
     /** State updated, let's update the stateSubscribers, too. */
     for(let sub of stateSubscribers){ sub.func(state);}
-  }, [state]);
+  }, [state, stateSubscribers]);
 
+  // const syncWhToSize() => {
   useEffect(() => {
+    if(!api) return;
+
     /** Auto-sizes width and height to commonly used proportions. */
     switch(state.size){
-      case "sm": api.updateState({width: 400, height: 200});
-      break;
-
-      case "md": api.updateState({width: 600, height: 400});
-      break;
-
-      case "lg": api.updateState({width: 800, height: 600});
-      break;
+      case "custom": return;
+      case "sm": api.updateState({width: 400, height: 200}); break;
+      case "md": api.updateState({width: 600, height: 400}); break;
+      case "lg": api.updateState({width: 800, height: 600}); break;
+      default: api.updateState({size: "custom"});
     }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.size]);
+
+  const syncSizeToWh = () => {
+    if(!api) return;
+    let [w, h] = [state.width, state.height];
+
+    if(w === 400 && h === 200) api.updateState({size: "sm"});
+    else if(w === 600 && h === 400) api.updateState({size: "md"});
+    else if(w === 800 && h === 600) api.updateState({size: "lg"});
+  };
 
   return (
       <Draggable
@@ -216,7 +234,7 @@ const RWindow = props => {
         onMouseDown={api.setFocused}>
 
         <div ref={nodeRef}
-          className={"r-window-wrapper "+"wrapper-"+props.options?.id}
+          className={`r-window-wrapper wrapper-${props.options?.id}`}
           style={{
             position: "absolute",
             display: state.isHidden ? "none" : "flex",

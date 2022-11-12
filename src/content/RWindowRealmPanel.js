@@ -1,4 +1,4 @@
-import React, { useReducer, useEffect, useContext } from 'react';
+import React, { useContext } from 'react';
 import RWindowRealm from "../RWindowRealm.js";
 import RWindowList from "./RWindowList.js";
 

@@ -1,4 +1,4 @@
-import React, { useReducer, useEffect, useContext } from 'react';
+import React, { useReducer } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import RWindow from "./RWindow.js";
 
@@ -19,11 +19,13 @@ import RWindow from "./RWindow.js";
  };
 
  const reducer = (state, action) => {
+   const { id } = action.payload;
+
    switch(action.type) {
      /** Creates & adds a new RWindow object to the windowPool.
       *  Provides the addApi & removeApi functions, see below. */
      case "add":
-       var { id, options, content, addApi, removeApi } = action.payload;
+       let { options, content, addApi, removeApi } = action.payload;
        let rWindow = (
          <RWindow key={id} options={{...options, id}}
                   addApi={addApi} removeApi={removeApi}>
@@ -34,12 +36,12 @@ import RWindow from "./RWindow.js";
      /** Removes an RWindow object from the windowPool &
       *  increments closeCount. */
     case "remove":
-      var i = state.windowPool.map(e => e.key).indexOf(action.payload);
-      if(!~i) return state;
+      let pooli = state.windowPool.map(e => e.key).indexOf(action.payload);
+      if(!~pooli) return state;
       return {
         ...state,
         windowPool: state.windowPool.filter(e => e.key !== action.payload),
-        closeCount: state.closeCount++
+        closeCount: state.closeCount+1
       };
 
     /** Sets the Key/Id of the most-recently focused RWindow. */
@@ -47,13 +49,13 @@ import RWindow from "./RWindow.js";
 
     /** Adds RWindow apis to windowApis. */
     case "add_api":
-      var { id, api } = action.payload;
+      let { api } = action.payload;
       return {...state, windowApis: [...state.windowApis, { id, api }]};
 
     /** Removes an api from windowApis. */
     case "remove_api":
-      var i = state.windowApis.map(e => e.id).indexOf(action.payload);
-      if(!~i) return state;
+      let apii = state.windowApis.map(e => e.id).indexOf(action.payload);
+      if(!~apii) return state;
       return {...state, windowApis: state.windowApis.filter(e => e.id !== action.payload)};
 
     /** Unknown/uncaught case. */
